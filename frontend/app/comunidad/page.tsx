@@ -6,7 +6,7 @@ import { onAuthStateChanged } from "firebase/auth";
 import {
   collection, addDoc, getDocs, query, where, orderBy, limit,
   serverTimestamp, updateDoc, doc, arrayUnion, arrayRemove,
-  increment, Timestamp, getDoc,
+  increment, Timestamp, getDoc, deleteDoc,
 } from "firebase/firestore";
 import { auth, db } from "@/src/firebase/config";
 import Navbar from "@/components/Navbar";
@@ -236,23 +236,40 @@ function CommentSection({
 // ── Post Card ─────────────────────────────────────────────────────────────────
 
 function PostCard({
-  post, currentUserId, currentUserName, onLikeToggle, onCommentCountChange,
+  post, currentUserId, currentUserName, onLikeToggle, onCommentCountChange, onDelete,
 }: {
   post: Post;
   currentUserId: string;
   currentUserName: string;
   onLikeToggle: (id: string) => void;
   onCommentCountChange: (id: string, n: number) => void;
+  onDelete: (id: string) => void;
 }) {
-  const isLiked = post.likedBy?.includes(currentUserId);
-  const meta = CAREER_META[post.career] ?? CAREER_META.general;
+  const isLiked    = post.likedBy?.includes(currentUserId);
+  const isOwner    = !!currentUserId && post.userId === currentUserId;
+  const meta       = CAREER_META[post.career] ?? CAREER_META.general;
+  const [menuOpen, setMenuOpen]       = useState(false);
+  const [confirming, setConfirming]   = useState(false);
+  const [deleting, setDeleting]       = useState(false);
+
+  const handleDelete = async () => {
+    setDeleting(true);
+    try {
+      await deleteDoc(doc(db, "Posts", post.id));
+      onDelete(post.id);
+    } finally {
+      setDeleting(false);
+      setConfirming(false);
+      setMenuOpen(false);
+    }
+  };
 
   return (
     <motion.div
       layout
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
-      exit={{ opacity: 0, scale: 0.97 }}
+      exit={{ opacity: 0, scale: 0.97, transition: { duration: 0.2 } }}
       className="bg-white rounded-2xl border border-slate-100 shadow-sm overflow-hidden hover:shadow-md transition-shadow"
     >
       {/* Header */}
@@ -270,6 +287,66 @@ function PostCard({
           </div>
           <p className="text-[11px] text-slate-400 mt-0.5">{timeAgo(post.createdAt)}</p>
         </div>
+
+        {/* Menú de opciones — solo al dueño del post */}
+        {isOwner && (
+          <div className="relative flex-shrink-0">
+            <button
+              onClick={() => { setMenuOpen((v) => !v); setConfirming(false); }}
+              className="flex h-8 w-8 items-center justify-center rounded-full text-slate-400 hover:bg-slate-100 hover:text-slate-600 transition-colors"
+            >
+              <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
+                <circle cx="5" cy="12" r="2"/><circle cx="12" cy="12" r="2"/><circle cx="19" cy="12" r="2"/>
+              </svg>
+            </button>
+
+            <AnimatePresence>
+              {menuOpen && (
+                <motion.div
+                  initial={{ opacity: 0, scale: 0.9, y: -4 }}
+                  animate={{ opacity: 1, scale: 1, y: 0 }}
+                  exit={{ opacity: 0, scale: 0.9, y: -4 }}
+                  transition={{ duration: 0.15 }}
+                  className="absolute right-0 top-9 z-50 w-44 rounded-2xl border border-slate-100 bg-white shadow-xl overflow-hidden"
+                >
+                  {!confirming ? (
+                    <button
+                      onClick={() => setConfirming(true)}
+                      className="flex w-full items-center gap-2.5 px-4 py-3 text-sm font-medium text-red-600 hover:bg-red-50 transition-colors"
+                    >
+                      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
+                          d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                      </svg>
+                      Eliminar post
+                    </button>
+                  ) : (
+                    <div className="px-4 py-3">
+                      <p className="text-xs font-semibold text-slate-700 mb-2.5">
+                        ¿Eliminar esta publicación?
+                      </p>
+                      <div className="flex gap-2">
+                        <button
+                          onClick={handleDelete}
+                          disabled={deleting}
+                          className="flex-1 rounded-lg bg-red-600 py-1.5 text-xs font-bold text-white transition hover:bg-red-700 disabled:opacity-60"
+                        >
+                          {deleting ? "..." : "Sí, eliminar"}
+                        </button>
+                        <button
+                          onClick={() => { setConfirming(false); setMenuOpen(false); }}
+                          className="flex-1 rounded-lg border border-slate-200 py-1.5 text-xs font-medium text-slate-600 transition hover:bg-slate-50"
+                        >
+                          Cancelar
+                        </button>
+                      </div>
+                    </div>
+                  )}
+                </motion.div>
+              )}
+            </AnimatePresence>
+          </div>
+        )}
       </div>
 
       {/* Text */}
@@ -493,6 +570,9 @@ export default function ComunidadPage() {
   const handleCommentCount = (postId: string, n: number) =>
     setPosts((prev) => prev.map((p) => p.id === postId ? { ...p, commentCount: n } : p));
 
+  const handleDelete = (postId: string) =>
+    setPosts((prev) => prev.filter((p) => p.id !== postId));
+
   const activeMeta = CAREER_META[activeCareer] ?? CAREER_META.general;
 
   return (
@@ -594,6 +674,7 @@ export default function ComunidadPage() {
                 currentUserName={currentUserName}
                 onLikeToggle={handleLike}
                 onCommentCountChange={handleCommentCount}
+                onDelete={handleDelete}
               />
             ))}
           </AnimatePresence>
