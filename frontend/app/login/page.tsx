@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
@@ -75,6 +75,7 @@ const handleRegister = async () => {
       document.cookie = `vocatio_session=${result.user.uid}; path=/; max-age=${7 * 24 * 60 * 60}; SameSite=Lax`;
       setSuccessMessage("Usuario registrado correctamente");
       setShowSuccess(true);
+      router.push("/")
     } catch (error: any) {
       setError(error.message);
     } finally {
@@ -98,139 +99,71 @@ const handleRegister = async () => {
   };
 
   return (
-    <main className="min-h-screen flex bg-slate-100">
+    <main className="relative min-h-screen overflow-hidden bg-[radial-gradient(circle_at_top_left,rgba(244,63,94,0.18),transparent_20%),radial-gradient(circle_at_top_right,rgba(251,146,60,0.14),transparent_20%),linear-gradient(180deg,#fff1f2_0%,#fef2f2_100%)] text-slate-950">
+      <div className="pointer-events-none absolute inset-0">
+        <div className="absolute left-0 top-16 h-72 w-72 rounded-full bg-red-300/30 blur-3xl" />
+        <div className="absolute right-10 top-28 h-80 w-80 rounded-full bg-rose-300/25 blur-3xl" />
+        <div className="absolute left-1/2 top-1/3 h-64 w-64 -translate-x-1/2 rounded-full bg-orange-300/20 blur-3xl" />
+      </div>
 
-      {/* PANEL IZQUIERDO */}
-      <motion.section
-        initial={{ opacity: 0, x: -80 }}
-        animate={{ opacity: 1, x: 0 }}
-        transition={{
-          duration: 0.8,
-          ease: "easeOut",
-        }}
-        className="hidden lg:flex w-1/2 bg-gradient-to-br from-red-900 via-red-800 to-red-700 text-white items-center justify-center p-12"
-      >
-        <div className="max-w-md">
-
-          <div className="mb-8">
-
-            <motion.h1
-              animate={{
-                y: [0, -8, 0],
-              }}
-              transition={{
-                duration: 4,
-                repeat: Infinity,
-                ease: "easeInOut",
-              }}
-              className="text-5xl font-bold mb-3"
-            >
-              Vocatio
-            </motion.h1>
-
-            <div className="w-24 h-1 bg-white rounded-full"></div>
-          </div>
-
-          <motion.h2
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{
-              delay: 0.3,
-              duration: 0.8,
-            }}
-            className="text-3xl font-semibold mb-6 leading-tight"
-          >
-            Descubre tu camino profesional con Inteligencia Artificial
-          </motion.h2>
-
-          <p className="text-red-100 text-lg leading-relaxed">
-            Explora carreras, conversa con un mentor virtual y construye un
-            roadmap personalizado para alcanzar tus objetivos académicos y
-            profesionales.
-          </p>
-
-          <div className="mt-10 space-y-4">
-
-            <motion.div
-              initial={{ opacity: 0, x: -20 }}
-              animate={{ opacity: 1, x: 0 }}
-              transition={{
-                delay: 0.5,
-                duration: 0.5,
-              }}
-              className="flex items-center gap-3"
-            >
-              <div className="w-3 h-3 rounded-full bg-white"></div>
-              <span>Test vocacional inteligente</span>
-            </motion.div>
-
-            <motion.div
-              initial={{ opacity: 0, x: -20 }}
-              animate={{ opacity: 1, x: 0 }}
-              transition={{
-                delay: 0.7,
-                duration: 0.5,
-              }}
-              className="flex items-center gap-3"
-            >
-              <div className="w-3 h-3 rounded-full bg-white"></div>
-              <span>Mentor IA personalizado</span>
-            </motion.div>
-
-            <motion.div
-              initial={{ opacity: 0, x: -20 }}
-              animate={{ opacity: 1, x: 0 }}
-              transition={{
-                delay: 0.9,
-                duration: 0.5,
-              }}
-              className="flex items-center gap-3"
-            >
-              <div className="w-3 h-3 rounded-full bg-white"></div>
-              <span>Roadmap profesional dinámico</span>
-            </motion.div>
-
-          </div>
-        </div>
-      </motion.section>
-
-      {/* PANEL DERECHO */}
-      <section className="flex-1 flex items-center justify-center p-6">
-
-        <motion.div
-          initial={{
-            opacity: 0,
-            y: 50,
-            scale: 0.95,
-          }}
-          animate={{
-            opacity: 1,
-            y: 0,
-            scale: 1,
-          }}
-          transition={{
-            duration: 0.6,
-            ease: "easeOut",
-          }}
-          className="bg-white w-full max-w-md rounded-3xl shadow-2xl p-8"
+      <div className="relative mx-auto flex min-h-screen w-full max-w-6xl items-center justify-center px-4 py-10">
+        <motion.section
+          initial={{ opacity: 0, y: 40 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.8, ease: "easeOut" }}
+          className="grid w-full gap-10 overflow-hidden rounded-[2rem] border border-white/80 bg-white/95 p-6 shadow-[0_35px_120px_rgba(15,23,42,0.15)] backdrop-blur-xl sm:grid-cols-[1.1fr_0.9fr] sm:p-10"
         >
+          <div className="flex flex-col justify-between gap-8">
+            <div className="space-y-6">
+              <div className="inline-flex items-center gap-3 rounded-full bg-red-600/10 px-4 py-2 text-sm font-semibold uppercase tracking-[0.28em] text-red-700">
+                <span className="inline-flex h-2.5 w-2.5 rounded-full bg-red-600" />
+                Vocatio AI
+              </div>
+              <h1 className="text-4xl font-extrabold tracking-[-0.04em] text-slate-950 sm:text-5xl">
+                Bienvenido al hub vocacional más dinámico
+              </h1>
+              <p className="max-w-xl text-base leading-8 text-slate-600 sm:text-lg">
+                Un inicio de sesión moderno con los tonos y la energía del sistema. Aquí comienza tu camino hacia la UTP con mentoría, recursos y admisión.
+              </p>
+            </div>
 
-        <h2 className="text-3xl font-bold text-gray-900">
-          {isLogin ? "Bienvenido" : "Crear Cuenta"}
-        </h2>
+            <div className="flex items-center justify-center">
+              {/* Image placeholder: place your uploaded image at `public/assets/login-cards.png` */}
+              <img
+                src="/assets/login-cards.png"
+                alt="UTP banner"
+                loading="lazy"
+                onError={(e) => {
+                  const target = e.currentTarget as HTMLImageElement;
+                  // Inline SVG fallback that looks like the original cards area
+                  const svg = `
+                    <svg xmlns='http://www.w3.org/2000/svg' width='1200' height='420' viewBox='0 0 1200 420'>
+                      <defs>
+                        <linearGradient id='g' x1='0' x2='1'>
+                          <stop offset='0' stop-color='%23ffecec'/>
+                          <stop offset='1' stop-color='%23fff6ec'/>
+                        </linearGradient>
+                      </defs>
+                      <rect x='0' y='0' width='1200' height='420' rx='28' fill='url(#g)' />
+                      <rect x='40' y='36' width='520' height='140' rx='20' fill='%23fff1f2' stroke='%23fde6e8' />
+                      <rect x='640' y='36' width='520' height='140' rx='20' fill='%23fff9f0' stroke='%23fff0e0' />
+                      <rect x='40' y='200' width='1120' height='140' rx='24' fill='url(#g)' stroke='%23fde6e8' />
+                      <text x='70' y='88' font-family='Georgia, serif' font-size='20' fill='%23c92a2a' letter-spacing='3'>RÁPIDO</text>
+                      <text x='670' y='88' font-family='Georgia, serif' font-size='20' fill='%23d3591f' letter-spacing='3'>CONFIANZA</text>
+                      <text x='70' y='252' font-family='Georgia, serif' font-size='20' fill='%23c92a2a' letter-spacing='3'>SUGERENCIA</text>
+                    </svg>`;
+                  target.src = 'data:image/svg+xml;utf8,' + encodeURIComponent(svg);
+                }}
+                className="w-full rounded-[1.75rem] object-cover shadow-sm max-h-56 sm:max-h-72"
+              />
+            </div>
+          </div>
 
-        <p className="text-gray-500 mt-2">
-          {isLogin
-            ? "Inicia sesión para continuar"
-            : "Completa tus datos para registrarte"}
-        </p>
-
-          <div className="space-y-5">
-
-        {!isLogin && (
           <motion.div
-            initial={{ opacity: 0, y: -10 }}
+            initial={{ opacity: 0, y: 30 }}
             animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.6, ease: "easeOut" }}
+            className="relative rounded-[2rem] border border-slate-200 bg-slate-50/95 p-8 shadow-[0_22px_70px_rgba(15,23,42,0.08)]"
           >
             <label className="block text-sm font-medium text-gray-700 mb-2">
               Nombre

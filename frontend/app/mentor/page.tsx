@@ -9,6 +9,8 @@ import { onAuthStateChanged } from "firebase/auth";
 import { auth } from "../../src/firebase/config";
 import { db } from "../../src/firebase/config";
 import { doc, getDoc, setDoc, deleteDoc, serverTimestamp } from "firebase/firestore";
+import { doc, getDoc, setDoc, serverTimestamp } from "firebase/firestore";
+import { trackBadgeEvent, showBadgeNotification } from "@/src/services/badgeService";
 
 type Message = {
   role: "user" | "assistant";
@@ -658,6 +660,15 @@ export default function MentorPage() {
         { role: "assistant", content: assistantContent },
       ];
       await saveChatHistory(selectedCareerId, finalMessages);
+
+      // Badge: track mentor usage
+      try {
+        const user = auth.currentUser;
+        if (user) {
+          const { newBadges } = await trackBadgeEvent(user.uid, "mentor_used");
+          newBadges.forEach((b) => showBadgeNotification(b));
+        }
+      } catch { /* silent */ }
     } catch (error) {
       setIsConnected(false);
       const errorMsg =
