@@ -9,6 +9,7 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
+import { usePathname } from "next/navigation";
 
 const highlights = [
   { title: "+2,500", description: "estudiantes acompañados" },
@@ -41,6 +42,9 @@ const features = [
 ];
 
 export default function Home() {
+  const pathname = usePathname();
+  const isHome = pathname === "/";
+
   return (
     <main className="relative min-h-screen overflow-hidden bg-[radial-gradient(circle_at_top_left,rgba(220,38,38,0.14),transparent_28%),radial-gradient(circle_at_top_right,rgba(244,63,94,0.12),transparent_24%),linear-gradient(180deg,#fff5f5_0%,#fef2f2_100%)] text-slate-900">
       <div className="pointer-events-none absolute inset-0 overflow-hidden">
@@ -66,7 +70,15 @@ export default function Home() {
           <nav className="hidden items-center gap-8 text-sm font-medium text-slate-600 lg:flex">
             <a
               className="text-red-700 transition-colors hover:text-red-500"
-              href="#inicio"
+              href={isHome ? "#inicio" : "/#inicio"}
+              onClick={(e) => {
+                if (isHome) {
+                  e.preventDefault();
+                  document
+                    .getElementById("inicio")
+                    ?.scrollIntoView({ behavior: "smooth" });
+                }
+              }}
             >
               Inicio
             </a>
