@@ -9,7 +9,11 @@ if [ ! -d "venv" ]; then
 fi
 
 echo "Activating virtual environment..."
-source venv/bin/activate
+if [ -f "venv/Scripts/activate" ]; then
+    source venv/Scripts/activate
+else
+    source venv/bin/activate
+fi
 
 echo "Installing dependencies..."
 pip install -r requirements.txt -q
