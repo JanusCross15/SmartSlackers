@@ -117,13 +117,6 @@ export default function Home() {
               >
                 Comenzar mi viaje
               </Button>
-              <Button
-                variant="outline"
-                size="lg"
-                className="transition-transform hover:scale-105"
-              >
-                Conocer más
-              </Button>
             </div>
 
             <div className="mt-10 flex flex-wrap items-center gap-4 text-sm text-slate-600 animate-fade-up animate-delay-600">
