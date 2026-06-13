@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { usePathname, useRouter } from "next/navigation";
-import { onAuthStateChanged } from "firebase/auth";
+import { onAuthStateChanged, User } from "firebase/auth";
 import { doc, getDoc } from "firebase/firestore";
 import { motion, AnimatePresence } from "framer-motion";
 import { auth, db } from "@/src/firebase/config";
@@ -39,17 +39,21 @@ export default function Navbar({
   const pathname = usePathname();
   const router = useRouter();
   const [userName, setUserName] = useState("");
+  const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
   const [menuOpen, setMenuOpen] = useState(false);
 
+  const displayName = userName || user?.displayName || user?.email?.split("@")[0] || "Usuario";
+
   useEffect(() => {
-    const unsub = onAuthStateChanged(auth, async (user) => {
-      if (!user) {
+    const unsub = onAuthStateChanged(auth, async (fbUser) => {
+      setUser(fbUser);
+      if (!fbUser) {
         setLoading(false);
         return;
       }
       try {
-        const snap = await getDoc(doc(db, "Usuarios", user.uid));
+        const snap = await getDoc(doc(db, "Usuarios", fbUser.uid));
         if (snap.exists()) setUserName(snap.data().nombre || "");
       } catch {
         // graceful — user info is display-only
@@ -159,13 +163,13 @@ export default function Navbar({
             </div>
           ) : (
             <>
-              {userName && (
+              {user && (
                 <>
                   <div className="hidden md:flex flex-col text-right leading-none">
-                    <span className={`text-xs font-semibold ${brandName}`}>{userName}</span>
+                    <span className={`text-xs font-semibold ${brandName}`}>{displayName}</span>
                   </div>
                   <div className="flex h-8 w-8 items-center justify-center rounded-full bg-gradient-to-br from-red-600 to-rose-500 text-white text-xs font-bold">
-                    {userName.charAt(0).toUpperCase()}
+                    {displayName.charAt(0).toUpperCase()}
                   </div>
                   <button
                     onClick={handleLogout}
@@ -239,7 +243,7 @@ export default function Navbar({
                   )}
                 </a>
               ))}
-              {userName && (
+              {user && (
                 <button
                   onClick={handleLogout}
                   className={`flex rounded-xl px-3 py-2.5 text-sm font-medium text-left transition-colors ${
