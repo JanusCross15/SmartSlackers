@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect, useRef, useCallback } from "react";
+import { useRouter } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
 import Navbar from "@/components/Navbar";
 import { useSimulationBadge } from "@/src/hooks/useSimulationBadge";
@@ -413,6 +414,7 @@ function ICUGame({ onComplete }: { onComplete: (s: number) => void }) {
 
 // ── Result ───────────────────────────────────────────────────
 function ResultScreen({ scores }: { scores: number[] }) {
+  const router = useRouter();
   const total = scores.reduce((a, b) => a + b, 0);
   const pct = Math.round((total / 100) * 100);
   const rank = pct >= 85 ? "Médico Estrella" : pct >= 65 ? "Residente Brillante" : pct >= 40 ? "Estudiante Prometedor" : "Practicante Novato";
@@ -466,7 +468,7 @@ function ResultScreen({ scores }: { scores: number[] }) {
           </div>
         ))}
       </div>
-      <button onClick={() => { window.location.href = "/simular"; }}
+      <button onClick={() => router.push("/simular")}
         className="px-8 py-3 rounded-xl bg-white/10 hover:bg-white/20 text-white font-bold transition">
         ← Volver al simulador
       </button>
@@ -478,6 +480,7 @@ function ResultScreen({ scores }: { scores: number[] }) {
 const PHASE_ORDER: GamePhase[] = ["briefing", "diagnose", "defib", "surgery", "icu", "result"];
 
 export default function MedicinaGame() {
+  const router = useRouter();
   const [phase, setPhase] = useState<GamePhase>("briefing");
   const [scores, setScores] = useState<number[]>([]);
   useSimulationBadge(phase);

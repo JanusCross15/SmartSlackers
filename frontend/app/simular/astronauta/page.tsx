@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect, useRef, useCallback } from "react";
+import { useRouter } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
 import Navbar from "@/components/Navbar";
 import { useSimulationBadge } from "@/src/hooks/useSimulationBadge";
@@ -1072,6 +1073,7 @@ function ResultScreen({ scores, onRetry, onExit }: { scores: number[]; onRetry: 
 // MAIN PAGE
 // ═══════════════════════════════════════════════════════════
 export default function AstronautaPage() {
+  const router = useRouter();
   const [phase, setPhase] = useState<GamePhase>("briefing");
   const [scores, setScores] = useState<number[]>([]);
   useSimulationBadge(phase);
@@ -1211,7 +1213,7 @@ export default function AstronautaPage() {
               <ResultScreen
                 scores={scores}
                 onRetry={reset}
-                onExit={() => (window.location.href = "/simular")}
+                onExit={() => router.push("/simular")}
               />
             </motion.div>
           )}
