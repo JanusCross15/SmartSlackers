@@ -1,30 +1,12 @@
 "use client";
-import AvatarCustomizer from "@/app/components/avatar/AvatarCustomizer";
-import { auth, db } from "@/src/firebase/config";
-import { doc, getDoc, setDoc, addDoc, collection, serverTimestamp } from "firebase/firestore";
-import { trackBadgeEvent, showBadgeNotification } from "@/src/services/badgeService";
-import type { Career } from "@/types/avatar";
-
-type Result = {
-  title?: string; desc?: string;
-  match?: number; color?: string; emoji?: string;
-  careerKey: string;
-import {
-  showBadgeNotification,
-  trackBadgeEvent,
-} from "@/src/services/badgeService";
-import type { Career } from "@/types/avatar";
-import { onAuthStateChanged } from "firebase/auth";
-import {
-  addDoc,
-  collection,
-  doc,
-  getDoc,
-  serverTimestamp,
-  setDoc,
-} from "firebase/firestore";
 import { motion } from "framer-motion";
 import { useEffect, useState } from "react";
+import AvatarCustomizer from "@/app/components/avatar/AvatarCustomizer";
+import { onAuthStateChanged } from "firebase/auth";
+import { doc, getDoc, setDoc, addDoc, collection, serverTimestamp } from "firebase/firestore";
+import { auth, db } from "@/src/firebase/config";
+import { trackBadgeEvent, showBadgeNotification } from "@/src/services/badgeService";
+import type { Career } from "@/types/avatar";
 
 type Result = {
   title?: string;
