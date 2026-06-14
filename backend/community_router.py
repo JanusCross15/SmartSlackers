@@ -4,6 +4,8 @@ from typing import Optional
 from datetime import datetime, timezone
 from firebase_admin import firestore
 
+import bleach
+
 from firestore_service import get_db
 
 router = APIRouter(prefix="/api/community", tags=["community"])
@@ -111,10 +113,11 @@ def create_post(body: PostBody):
 
     db = get_db()
     now = datetime.now(timezone.utc)
+    clean_text = bleach.clean(body.text.strip(), tags=["b", "i", "u", "p", "br", "strong", "em"], attributes={}, strip=True)
     data = {
         "userId": body.userId,
         "userName": body.userName,
-        "text": body.text.strip(),
+        "text": clean_text,
         "imageUrl": body.imageUrl,
         "career": body.career,
         "createdAt": now,
@@ -184,10 +187,11 @@ def add_comment(post_id: str, body: CommentBody):
         raise HTTPException(status_code=404, detail="Post not found")
 
     now = datetime.now(timezone.utc)
+    clean_text = bleach.clean(body.text.strip(), tags=["b", "i", "u", "p", "br", "strong", "em"], attributes={}, strip=True)
     data = {
         "userId": body.userId,
         "userName": body.userName,
-        "text": body.text.strip(),
+        "text": clean_text,
         "createdAt": now,
     }
     _, ref = post_ref.collection(COMMENTS_COL).add(data)
