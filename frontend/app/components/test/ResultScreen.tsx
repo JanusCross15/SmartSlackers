@@ -20,7 +20,8 @@ import {
   setDoc,
 } from "firebase/firestore";
 import { motion } from "framer-motion";
-import { useEffect, useState } from "react";
+import { toBlob } from "html-to-image";
+import { useEffect, useRef, useState } from "react";
 
 const DEFAULT_AVATAR: AvatarConfig = {
   skinTone: "medium-light",
@@ -64,6 +65,12 @@ export default function ResultScreen({
 }) {
   const [displayMatch, setDisplayMatch]   = useState(0);
   const [avatarCfg, setAvatarCfg]         = useState<AvatarConfig | null>(null);
+  const [showShareModal, setShowShareModal] = useState(false);
+  const [imageBlobUrl, setImageBlobUrl] = useState("");
+  const [imageBlob, setImageBlob] = useState<Blob | null>(null);
+  const [copyStatus, setCopyStatus] = useState("Copiar imagen");
+  const [isCapturing, setIsCapturing] = useState(false);
+  const resultRef = useRef<HTMLDivElement | null>(null);
 
   // Carga avatar del usuario para la preview lateral
   useEffect(() => {
@@ -195,6 +202,14 @@ export default function ResultScreen({
     return () => unsub();
   }, [result.insufficient]);
 
+  useEffect(() => {
+    return () => {
+      if (imageBlobUrl) {
+        URL.revokeObjectURL(imageBlobUrl);
+      }
+    };
+  }, [imageBlobUrl]);
+
   // ── Pantalla de respuestas insuficientes ──────────────────────────
   if (result.insufficient) {
     return (
@@ -299,6 +314,7 @@ export default function ResultScreen({
       {/* ── Columna izquierda: resultado ── */}
       <div className="flex-1 min-w-0">
       <motion.div
+        ref={resultRef}
         initial={{ opacity: 0, scale: 0.9 }}
         animate={{ opacity: 1, scale: 1 }}
         transition={{ duration: 0.5, type: "spring" }}
@@ -526,6 +542,24 @@ export default function ResultScreen({
           <motion.button
             whileHover={{ scale: 1.03 }}
             whileTap={{ scale: 0.97 }}
+            onClick={() => setShowShareModal(true)}
+            style={{
+              width: "100%",
+              padding: "12px",
+              background: "rgba(255,255,255,0.98)",
+              border: "0.5px solid rgba(0,112,244,0.18)",
+              borderRadius: "12px",
+              color: "#0f172a",
+              fontSize: "14px",
+              cursor: "pointer",
+            }}
+          >
+            📤 Compartir resultado
+          </motion.button>
+
+          <motion.button
+            whileHover={{ scale: 1.03 }}
+            whileTap={{ scale: 0.97 }}
             onClick={() => window.location.reload()}
             style={{
               width: "100%",
@@ -542,6 +576,184 @@ export default function ResultScreen({
           </motion.button>
         </div>
       </motion.div>
+
+      {showShareModal && (
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          exit={{ opacity: 0 }}
+          style={{
+            position: "fixed",
+            inset: 0,
+            zIndex: 1000,
+            background: "rgba(0,0,0,0.45)",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            padding: "1rem",
+          }}
+          onClick={() => setShowShareModal(false)}
+        >
+          <motion.div
+            initial={{ scale: 0.92, opacity: 0 }}
+            animate={{ scale: 1, opacity: 1 }}
+            transition={{ type: "spring", stiffness: 260, damping: 22 }}
+            onClick={(e) => e.stopPropagation()}
+            style={{
+              width: "100%",
+              maxWidth: "520px",
+              background: "rgba(255,255,255,0.96)",
+              borderRadius: "22px",
+              padding: "2rem",
+              boxShadow: "0 24px 64px rgba(0,0,0,0.18)",
+            }}
+          >
+            <h3 style={{ margin: 0, marginBottom: "0.75rem", fontSize: "22px", fontWeight: 700, color: "#111827" }}>
+              Compartir resultado
+            </h3>
+            <p style={{ margin: 0, marginBottom: "1.25rem", color: "#4b5563", fontSize: "14px", lineHeight: 1.6 }}>
+              Genera una imagen PNG del resultado y compártela fácilmente desde el navegador. El archivo se crea en el cliente, sin enlaces dinámicos.
+            </p>
+
+            <div style={{ display: "flex", gap: "10px", marginBottom: "1rem", flexWrap: "wrap" }}>
+              <input
+                value={imageBlobUrl || "Presiona Abrir enlace para generar la imagen..."}
+                readOnly
+                onFocus={(e) => e.target.select()}
+                style={{
+                  flex: 1,
+                  minWidth: 0,
+                  padding: "14px 16px",
+                  borderRadius: "14px",
+                  border: "1px solid rgba(148,163,184,0.35)",
+                  background: "#f8fafc",
+                  color: "#0f172a",
+                  fontSize: "14px",
+                }}
+              />
+            </div>
+
+            <div style={{ display: "flex", gap: "10px", flexWrap: "wrap" }}>
+              <button
+                onClick={async () => {
+                  if (!resultRef.current) return;
+                  setIsCapturing(true);
+                  if (imageBlobUrl) {
+                    try {
+                      if (imageBlob) {
+                        await navigator.clipboard.write([new ClipboardItem({ [imageBlob.type]: imageBlob })]);
+                        setCopyStatus("Imagen copiada");
+                      }
+                    } catch {
+                      setCopyStatus("Error al copiar");
+                    } finally {
+                      setTimeout(() => setCopyStatus("Copiar imagen"), 2000);
+                      setIsCapturing(false);
+                    }
+                    return;
+                  }
+
+                  try {
+                    const blob = await toBlob(resultRef.current, {
+                      cacheBust: true,
+                      backgroundColor: "#ffffff",
+                    });
+                    if (!blob) throw new Error("No se generó la imagen");
+
+                    if (imageBlobUrl) {
+                      URL.revokeObjectURL(imageBlobUrl);
+                    }
+                    const url = URL.createObjectURL(blob);
+                    setImageBlob(blob);
+                    setImageBlobUrl(url);
+                    await navigator.clipboard.write([new ClipboardItem({ [blob.type]: blob })]);
+                    setCopyStatus("Imagen copiada");
+                  } catch {
+                    setCopyStatus("Error al copiar");
+                  } finally {
+                    setTimeout(() => setCopyStatus("Copiar imagen"), 2000);
+                    setIsCapturing(false);
+                  }
+                }}
+                style={{
+                  padding: "12px 18px",
+                  background: "#2563eb",
+                  border: "none",
+                  borderRadius: "14px",
+                  color: "white",
+                  fontWeight: 700,
+                  cursor: "pointer",
+                  minWidth: "160px",
+                }}
+                disabled={isCapturing}
+              >
+                {isCapturing ? "Generando..." : copyStatus}
+              </button>
+              <button
+                onClick={async () => {
+                  if (!resultRef.current) return;
+                  try {
+                    setIsCapturing(true);
+                    if (!imageBlobUrl || !imageBlob) {
+                      const blob = await toBlob(resultRef.current, {
+                        cacheBust: true,
+                        backgroundColor: "#ffffff",
+                      });
+                      if (!blob) throw new Error("No se generó la imagen");
+                      if (imageBlobUrl) {
+                        URL.revokeObjectURL(imageBlobUrl);
+                      }
+                      const url = URL.createObjectURL(blob);
+                      setImageBlob(blob);
+                      setImageBlobUrl(url);
+                      window.open(url, "_blank");
+                    } else {
+                      window.open(imageBlobUrl, "_blank");
+                    }
+                  } catch {
+                    setCopyStatus("Error al generar");
+                    setTimeout(() => setCopyStatus("Copiar imagen"), 2000);
+                  } finally {
+                    setIsCapturing(false);
+                  }
+                }}
+                style={{
+                  display: "inline-flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  padding: "12px 18px",
+                  background: "rgba(15,23,42,0.08)",
+                  borderRadius: "14px",
+                  color: "#111827",
+                  textDecoration: "none",
+                  fontWeight: 700,
+                  minWidth: "160px",
+                  cursor: "pointer",
+                  border: "none",
+                }}
+                disabled={isCapturing}
+              >
+                Abrir enlace
+              </button>
+              <button
+                onClick={() => setShowShareModal(false)}
+                style={{
+                  padding: "12px 18px",
+                  background: "transparent",
+                  border: "1px solid rgba(148,163,184,0.35)",
+                  borderRadius: "14px",
+                  color: "#475569",
+                  fontWeight: 700,
+                  cursor: "pointer",
+                  minWidth: "120px",
+                }}
+              >
+                Cerrar
+              </button>
+            </div>
+          </motion.div>
+        </motion.div>
+      )}
       </div>{/* fin columna izquierda */}
 
       {/* ── Columna derecha: preview del avatar con nuevo traje ── */}
