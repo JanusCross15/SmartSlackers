@@ -6,6 +6,7 @@ import { apiFetch } from "@/lib/api";
 import { useTranslation } from "@/lib/i18n";
 import { AnimatePresence, motion } from "framer-motion";
 import { useEffect, useState, useCallback } from "react";
+import { useRouter } from "next/navigation";
 import { collection, getDocs, query, where, limit } from "firebase/firestore";
 import { db } from "@/src/firebase/config";
 import { onAuthStateChanged } from "firebase/auth";
@@ -228,6 +229,7 @@ function SimulatorPanel({
   onClose: () => void;
   t: (key: string) => string;
 }) {
+  const router = useRouter();
   const nowActivity = getNowActivity(career.dayInLife);
   const [activeTab, setActiveTab] = useState<"dia" | "datos">("dia");
 
@@ -472,7 +474,7 @@ function SimulatorPanel({
               background: `linear-gradient(135deg, ${career.color}, ${career.color}cc)`,
               boxShadow: `0 8px 24px ${career.color}40`,
             }}
-            onClick={() => (window.location.href = "/test")}
+            onClick={() => router.push("/test")}
           >
             {t("carreras.hacerTest")}
           </motion.button>
@@ -757,6 +759,7 @@ function ComparePanel({
 
 export default function CarrerasPage() {
   const { t } = useTranslation();
+  const router = useRouter();
   const [search, setSearch] = useState("");
   const [area, setArea] = useState("Todos");
   const [selected, setSelected] = useState<Career | null>(null);
@@ -777,13 +780,12 @@ export default function CarrerasPage() {
           explored.push(career.id);
           localStorage.setItem("exploredCareers", JSON.stringify(explored));
           // Send to backend
-          onAuthStateChanged(auth, (user) => {
-            if (user) {
-              trackBadgeEvent(user.uid, "career_explored").then(({ newBadges }) => {
-                newBadges.forEach((b) => showBadgeNotification(b));
-              }).catch(() => {});
-            }
-          });
+          const user = auth.currentUser;
+          if (user) {
+            trackBadgeEvent(user.uid, "career_explored").then(({ newBadges }) => {
+              newBadges.forEach((b) => showBadgeNotification(b));
+            }).catch(() => {});
+          }
         }
       } catch { /* silent */ }
     }

@@ -2,6 +2,7 @@ from fastapi import APIRouter, HTTPException
 from pydantic import BaseModel
 from typing import Optional
 from datetime import datetime, timezone
+from firebase_admin import firestore
 
 from firestore_service import get_db
 
@@ -86,7 +87,7 @@ def get_posts(career: str = "general"):
         else:
             docs = list(col.where("career", "==", career).limit(60).stream())
         docs.sort(
-            key=lambda d: d.to_dict().get("createdAt", datetime.min),
+            key=lambda d: d.to_dict().get("createdAt") or datetime.min,
             reverse=True,
         )
 
@@ -167,7 +168,7 @@ def get_comments(post_id: str):
         )
     except Exception:
         docs = list(post_ref.collection(COMMENTS_COL).stream())
-        docs.sort(key=lambda d: d.to_dict().get("createdAt", datetime.min))
+        docs.sort(key=lambda d: d.to_dict().get("createdAt") or datetime.min)
 
     return {"comments": [_serialize(d.id, d.to_dict()) for d in docs]}
 
@@ -191,7 +192,7 @@ def add_comment(post_id: str, body: CommentBody):
     }
     _, ref = post_ref.collection(COMMENTS_COL).add(data)
 
-    # Increment commentCount on the post
-    post_ref.update({"commentCount": post_ref.get().to_dict().get("commentCount", 0) + 1})
+    # Increment commentCount on the post (atomic)
+    post_ref.update({"commentCount": firestore.Increment(1)})
 
     return _serialize(ref.id, data)

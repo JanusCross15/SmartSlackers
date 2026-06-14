@@ -5,6 +5,7 @@ import { auth } from "@/src/firebase/config";
 import { loadAvatar } from "@/src/services/avatarService";
 import type { AvatarConfig } from "@/types/avatar";
 import { useTestLogic, TEST_SESSION_KEY } from "../components/test/useTestLogic";
+import { useRouter } from "next/navigation";
 import TestIntro from "../components/test/TestIntro";
 import QuestionCard from "../components/test/QuestionCard";
 import ResultScreen from "../components/test/ResultScreen";
@@ -17,6 +18,7 @@ type SavedSession = { answers: string[]; current: number; score: number; savedAt
 
 export default function TestPage() {
   const logic = useTestLogic();
+  const router = useRouter();
   const [savedSession, setSavedSession]   = useState<SavedSession | null>(null);
   const [avatarConfig, setAvatarConfig]   = useState<AvatarConfig | null>(null);
   const [showExitModal, setShowExitModal] = useState(false);
@@ -60,7 +62,7 @@ export default function TestPage() {
 
   const handleExitConfirm = useCallback(() => {
     setShowExitModal(false);
-    window.location.href = "/";
+    router.push("/");
   }, []);
 
   const isInProgress = logic.phase === "question" || logic.phase === "feedback";

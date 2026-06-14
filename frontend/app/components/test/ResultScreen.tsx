@@ -22,6 +22,7 @@ import {
 import { motion } from "framer-motion";
 import { toBlob } from "html-to-image";
 import { useEffect, useRef, useState } from "react";
+import { useRouter } from "next/navigation";
 
 const DEFAULT_AVATAR: AvatarConfig = {
   skinTone: "medium-light",
@@ -63,6 +64,7 @@ export default function ResultScreen({
   score: number;
   answers: string[];
 }) {
+  const router = useRouter();
   const [displayMatch, setDisplayMatch]   = useState(0);
   const [avatarCfg, setAvatarCfg]         = useState<AvatarConfig | null>(null);
   const [showShareModal, setShowShareModal] = useState(false);
@@ -501,7 +503,7 @@ export default function ResultScreen({
             whileHover={{ scale: 1.03 }}
             whileTap={{ scale: 0.97 }}
             onClick={() =>
-              (window.location.href = `/roadmap?career=${result.careerKey}`)
+              router.push(`/roadmap?career=${result.careerKey}`)
             }
             style={{
               width: "100%",
@@ -522,7 +524,7 @@ export default function ResultScreen({
             whileHover={{ scale: 1.03 }}
             whileTap={{ scale: 0.97 }}
             onClick={() =>
-              (window.location.href = `/laboratorios?career=${result.careerKey}`)
+              router.push(`/laboratorios?career=${result.careerKey}`)
             }
             style={{
               width: "100%",

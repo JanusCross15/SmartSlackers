@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect, useRef, useCallback } from "react";
+import { useRouter } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
 import Navbar from "@/components/Navbar";
 import { useSimulationBadge } from "@/src/hooks/useSimulationBadge";
@@ -387,6 +388,7 @@ function ArgumentGame({ onComplete }: { onComplete: (s: number) => void }) {
 
 // ── Result ───────────────────────────────────────────────────
 function ResultScreen({ scores }: { scores: number[] }) {
+  const router = useRouter();
   const total = scores.reduce((a, b) => a + b, 0);
   const pct = Math.round((total / 100) * 100);
   const rank = pct >= 85 ? "Gran Abogado" : pct >= 65 ? "Abogado Graduado" : pct >= 40 ? "Pasante Destacado" : "Estudiante de Leyes";
@@ -437,7 +439,7 @@ function ResultScreen({ scores }: { scores: number[] }) {
           </div>
         ))}
       </div>
-      <button onClick={() => { window.location.href = "/simular"; }} className="px-8 py-3 rounded-xl bg-white/10 hover:bg-white/20 text-white font-bold transition">
+      <button onClick={() => router.push("/simular")} className="px-8 py-3 rounded-xl bg-white/10 hover:bg-white/20 text-white font-bold transition">
         ← Volver al simulador
       </button>
     </div>
@@ -445,6 +447,7 @@ function ResultScreen({ scores }: { scores: number[] }) {
 }
 
 export default function DerechoGame() {
+  const router = useRouter();
   const [phase, setPhase] = useState<GamePhase>("briefing");
   const [scores, setScores] = useState<number[]>([]);
   useSimulationBadge(phase);

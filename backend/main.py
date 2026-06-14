@@ -61,7 +61,7 @@ def list_careers_v2():
         return {
             "total": len(CAREERS),
             "careers": [
-                {"id": k, **v}
+                {"id": k, "title": v["name"], "faculty": v["faculty"]}
                 for k, v in CAREERS.items()
             ],
             "source": "fallback",
