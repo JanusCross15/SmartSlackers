@@ -190,7 +190,7 @@ export default function TestPage() {
       </AnimatePresence>
 
       <div style={{ display: "flex", alignItems: "center", justifyContent: "center", padding: "1rem", minHeight: "calc(100vh - 57px)" }}>
-        {logic.phase === "intro" && (
+        {logic.phase === "intro" ? (
           <TestIntro
             onStart={handleStart}
             hasSession={!!savedSession}
@@ -198,8 +198,7 @@ export default function TestPage() {
             onResume={handleResume}
             avatarConfig={avatarConfig}
           />
-        )}
-        {isInProgress && (
+        ) : isInProgress ? (
           <QuestionCard
             question={logic.question}
             current={logic.current}
@@ -209,10 +208,9 @@ export default function TestPage() {
             score={logic.score}
             onAnswer={logic.handleAnswer}
           />
-        )}
-        {logic.phase === "result" && (
+        ) : logic.phase === "result" ? (
           <ResultScreen result={logic.getResult()} score={logic.score} answers={logic.answers} />
-        )}
+        ) : null}
       </div>
 
       <style>{`
