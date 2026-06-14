@@ -6,6 +6,8 @@ import { motion, AnimatePresence } from "framer-motion";
 const MENTOR_API_URL =
   process.env.NEXT_PUBLIC_MENTOR_API_URL || "http://127.0.0.1:8000";
 
+const API_KEY = process.env.NEXT_PUBLIC_API_SECRET_KEY || "";
+
 const MINI_CAREERS = [
   { id: "software",   icon: "💻", label: "Software" },
   { id: "medicina",   icon: "🩺", label: "Medicina" },
@@ -39,7 +41,10 @@ export default function MiniMentorWidget() {
     try {
       const res = await fetch(`${MENTOR_API_URL}/api/mentor`, {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: {
+          "Content-Type": "application/json",
+          "X-API-Key": API_KEY,
+        },
         body: JSON.stringify({ messages: msgs, careerId: career }),
       });
       if (!res.ok) throw new Error();
